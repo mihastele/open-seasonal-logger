@@ -3,10 +3,11 @@ import 'package:seasonal/brand/palette.dart';
 import 'package:seasonal/data/app_database.dart';
 import 'package:seasonal/main.dart';
 
-/// Settings for the single end-of-season reminder.
+/// Settings for the single end-of-season reminder and the optional support
+/// link.
 ///
-/// This is not a recurring habit schedule. A season has a natural stopping
-/// point, and so does its reminder (see the product principles).
+/// The reminder is not a recurring habit schedule. A season has a natural
+/// stopping point, and so does its reminder (see the product principles).
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key, required this.dependencies});
 
@@ -32,15 +33,52 @@ class SettingsScreen extends StatelessWidget {
                 if (setting == null) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                return _ReminderForm(
-                  dependencies: dependencies,
-                  setting: setting,
+                return ListView(
+                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 40),
+                  children: [
+                    _ReminderForm(
+                      dependencies: dependencies,
+                      setting: setting,
+                    ),
+                    const SizedBox(height: 36),
+                    _SupportSection(dependencies: dependencies),
+                  ],
                 );
               },
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+class _SectionHeading extends StatelessWidget {
+  const _SectionHeading({required this.title, required this.body});
+
+  final String title;
+  final String body;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 12,
+            letterSpacing: 3,
+            fontWeight: FontWeight.w600,
+            color: SeasonalColors.stone,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          body,
+          style: const TextStyle(color: SeasonalColors.clay, height: 1.5),
+        ),
+      ],
     );
   }
 }
@@ -74,23 +112,14 @@ class _ReminderFormState extends State<_ReminderForm> {
       hour: _timeOfDayMinutes ~/ 60,
       minute: _timeOfDayMinutes % 60,
     );
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(24, 8, 24, 40),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text(
-          'END-OF-SEASON REMINDER',
-          style: TextStyle(
-            fontSize: 12,
-            letterSpacing: 3,
-            fontWeight: FontWeight.w600,
-            color: SeasonalColors.stone,
-          ),
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'One gentle nudge as your season draws to a close. Not a streak, '
-          'not a daily task — just a moment to think about what is next.',
-          style: TextStyle(color: SeasonalColors.clay, height: 1.5),
+        const _SectionHeading(
+          title: 'END-OF-SEASON REMINDER',
+          body: 'One gentle nudge as your season draws to a close. Not a '
+              'streak, not a daily task — just a moment to think about what '
+              'is next.',
         ),
         const SizedBox(height: 20),
         Card(
@@ -206,6 +235,48 @@ class _ChoiceTile<T> extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// The optional support toggle. Off by default; the user can turn it back on.
+class _SupportSection extends StatelessWidget {
+  const _SupportSection({required this.dependencies});
+
+  final AppDependencies dependencies;
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<SupportSetting>(
+      stream: dependencies.support.watch(),
+      builder: (context, snapshot) {
+        final show = snapshot.data?.showFooter ?? false;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const _SectionHeading(
+              title: 'SUPPORT',
+              body: 'Seasonal is free, offline, and has no account. If it '
+                  'earned it, there is a quiet link at the foot of the home '
+                  'screen. You can hide it whenever you like.',
+            ),
+            const SizedBox(height: 20),
+            Card(
+              child: SwitchListTile(
+                title: const Text('Show the coffee link'),
+                subtitle: const Text(
+                  'Off by default. Nothing else in the app asks for anything.',
+                ),
+                value: show,
+                activeThumbColor: SeasonalColors.ember,
+                onChanged: (value) {
+                  dependencies.support.setShowFooter(value);
+                },
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

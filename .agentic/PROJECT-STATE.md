@@ -193,6 +193,32 @@
 - STOPPED — next: commit + push; run on device to eyeball the swipe UX.
   Remaining open decisions: license, export/delete-export design.
 
+### 2026-09-28 — Optional Buy Me a Coffee link
+
+- Added an optional, off-by-default support link at the foot of the home
+  screen: `https://buymeacoffee.com/mihastele`.
+- SCHEMA CHANGE, v2 -> v3: new single-row `SupportSettings` table
+  (`showFooter`, default false). `onUpgrade` creates + seeds it; the old
+  `_seedReminderSettings` became `_seedSingletonRows`. schemaVersion => 3.
+- New `lib/data/support_repository.dart` (`SupportRepository`) holds the URL
+  and the preference. `AppDependencies.support` added.
+- New `lib/ui/support_footer.dart`: quiet text link + inline dismiss (X),
+  using Stone/Clay — never the Buy-Me-a-Coffee yellow (per brand rule that
+  third-party brand colours stay out of the app).
+- Settings screen now has a "Show the coffee link" toggle (off by default).
+- Link opens via `url_launcher` (`LaunchMode.externalApplication`); the app
+  still makes no network request itself (principle 5). Added an https
+  `<queries>` intent to AndroidManifest for Android 11+; no iOS
+  `LSApplicationQueriesSchemes` needed since we don't call `canLaunchUrl`.
+- DECISION: kept off by default so it "disturbs nobody"; the user opted to
+  make it hideable inline and from Settings.
+- Tests: 39 pass. Added `support_test.dart` (default off, toggle, https URL)
+  and two widget tests (hidden by default; shown then dismissed inline).
+  Migration test now also asserts the SupportSettings seed. Analyze clean.
+- STOPPED — next: commit + push; run on device to eyeball the footer + settings.
+  Remaining open decisions: license, export design.
+
+
 
 
 

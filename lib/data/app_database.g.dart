@@ -970,11 +970,217 @@ class ReminderSettingsCompanion extends UpdateCompanion<ReminderSetting> {
   }
 }
 
+class $SupportSettingsTable extends SupportSettings
+    with TableInfo<$SupportSettingsTable, SupportSetting> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SupportSettingsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _showFooterMeta = const VerificationMeta(
+    'showFooter',
+  );
+  @override
+  late final GeneratedColumn<bool> showFooter = GeneratedColumn<bool>(
+    'show_footer',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("show_footer" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, showFooter];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'support_settings';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SupportSetting> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('show_footer')) {
+      context.handle(
+        _showFooterMeta,
+        showFooter.isAcceptableOrUnknown(data['show_footer']!, _showFooterMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SupportSetting map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SupportSetting(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      showFooter: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}show_footer'],
+      )!,
+    );
+  }
+
+  @override
+  $SupportSettingsTable createAlias(String alias) {
+    return $SupportSettingsTable(attachedDatabase, alias);
+  }
+}
+
+class SupportSetting extends DataClass implements Insertable<SupportSetting> {
+  final int id;
+  final bool showFooter;
+  const SupportSetting({required this.id, required this.showFooter});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['show_footer'] = Variable<bool>(showFooter);
+    return map;
+  }
+
+  SupportSettingsCompanion toCompanion(bool nullToAbsent) {
+    return SupportSettingsCompanion(
+      id: Value(id),
+      showFooter: Value(showFooter),
+    );
+  }
+
+  factory SupportSetting.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SupportSetting(
+      id: serializer.fromJson<int>(json['id']),
+      showFooter: serializer.fromJson<bool>(json['showFooter']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'showFooter': serializer.toJson<bool>(showFooter),
+    };
+  }
+
+  SupportSetting copyWith({int? id, bool? showFooter}) => SupportSetting(
+    id: id ?? this.id,
+    showFooter: showFooter ?? this.showFooter,
+  );
+  SupportSetting copyWithCompanion(SupportSettingsCompanion data) {
+    return SupportSetting(
+      id: data.id.present ? data.id.value : this.id,
+      showFooter: data.showFooter.present
+          ? data.showFooter.value
+          : this.showFooter,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SupportSetting(')
+          ..write('id: $id, ')
+          ..write('showFooter: $showFooter')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, showFooter);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SupportSetting &&
+          other.id == this.id &&
+          other.showFooter == this.showFooter);
+}
+
+class SupportSettingsCompanion extends UpdateCompanion<SupportSetting> {
+  final Value<int> id;
+  final Value<bool> showFooter;
+  const SupportSettingsCompanion({
+    this.id = const Value.absent(),
+    this.showFooter = const Value.absent(),
+  });
+  SupportSettingsCompanion.insert({
+    this.id = const Value.absent(),
+    this.showFooter = const Value.absent(),
+  });
+  static Insertable<SupportSetting> custom({
+    Expression<int>? id,
+    Expression<bool>? showFooter,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (showFooter != null) 'show_footer': showFooter,
+    });
+  }
+
+  SupportSettingsCompanion copyWith({Value<int>? id, Value<bool>? showFooter}) {
+    return SupportSettingsCompanion(
+      id: id ?? this.id,
+      showFooter: showFooter ?? this.showFooter,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (showFooter.present) {
+      map['show_footer'] = Variable<bool>(showFooter.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SupportSettingsCompanion(')
+          ..write('id: $id, ')
+          ..write('showFooter: $showFooter')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $SeasonsTable seasons = $SeasonsTable(this);
   late final $ReminderSettingsTable reminderSettings = $ReminderSettingsTable(
+    this,
+  );
+  late final $SupportSettingsTable supportSettings = $SupportSettingsTable(
     this,
   );
   late final Index seasonsStartDate = Index(
@@ -988,6 +1194,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     seasons,
     reminderSettings,
+    supportSettings,
     seasonsStartDate,
   ];
 }
@@ -1487,6 +1694,146 @@ typedef $$ReminderSettingsTableProcessedTableManager =
       ReminderSetting,
       PrefetchHooks Function()
     >;
+typedef $$SupportSettingsTableCreateCompanionBuilder =
+    SupportSettingsCompanion Function({Value<int> id, Value<bool> showFooter});
+typedef $$SupportSettingsTableUpdateCompanionBuilder =
+    SupportSettingsCompanion Function({Value<int> id, Value<bool> showFooter});
+
+class $$SupportSettingsTableFilterComposer
+    extends Composer<_$AppDatabase, $SupportSettingsTable> {
+  $$SupportSettingsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get showFooter => $composableBuilder(
+    column: $table.showFooter,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SupportSettingsTableOrderingComposer
+    extends Composer<_$AppDatabase, $SupportSettingsTable> {
+  $$SupportSettingsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get showFooter => $composableBuilder(
+    column: $table.showFooter,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SupportSettingsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SupportSettingsTable> {
+  $$SupportSettingsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<bool> get showFooter => $composableBuilder(
+    column: $table.showFooter,
+    builder: (column) => column,
+  );
+}
+
+class $$SupportSettingsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SupportSettingsTable,
+          SupportSetting,
+          $$SupportSettingsTableFilterComposer,
+          $$SupportSettingsTableOrderingComposer,
+          $$SupportSettingsTableAnnotationComposer,
+          $$SupportSettingsTableCreateCompanionBuilder,
+          $$SupportSettingsTableUpdateCompanionBuilder,
+          (
+            SupportSetting,
+            BaseReferences<
+              _$AppDatabase,
+              $SupportSettingsTable,
+              SupportSetting
+            >,
+          ),
+          SupportSetting,
+          PrefetchHooks Function()
+        > {
+  $$SupportSettingsTableTableManager(
+    _$AppDatabase db,
+    $SupportSettingsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SupportSettingsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SupportSettingsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SupportSettingsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<bool> showFooter = const Value.absent(),
+          }) => SupportSettingsCompanion(id: id, showFooter: showFooter),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<bool> showFooter = const Value.absent(),
+          }) => SupportSettingsCompanion.insert(id: id, showFooter: showFooter),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$SupportSettingsTable, SupportSetting>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $SupportSettingsTable,
+                    SupportSetting
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SupportSettingsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SupportSettingsTable,
+      SupportSetting,
+      $$SupportSettingsTableFilterComposer,
+      $$SupportSettingsTableOrderingComposer,
+      $$SupportSettingsTableAnnotationComposer,
+      $$SupportSettingsTableCreateCompanionBuilder,
+      $$SupportSettingsTableUpdateCompanionBuilder,
+      (
+        SupportSetting,
+        BaseReferences<_$AppDatabase, $SupportSettingsTable, SupportSetting>,
+      ),
+      SupportSetting,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -1495,4 +1842,6 @@ class $AppDatabaseManager {
       $$SeasonsTableTableManager(_db, _db.seasons);
   $$ReminderSettingsTableTableManager get reminderSettings =>
       $$ReminderSettingsTableTableManager(_db, _db.reminderSettings);
+  $$SupportSettingsTableTableManager get supportSettings =>
+      $$SupportSettingsTableTableManager(_db, _db.supportSettings);
 }

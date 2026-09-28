@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:seasonal/data/app_database.dart';
 import 'package:seasonal/data/reminder_repository.dart';
 import 'package:seasonal/data/season_repository.dart';
+import 'package:seasonal/data/support_repository.dart';
 import 'package:seasonal/services/season_notifications.dart';
 import 'package:seasonal/ui/home_screen.dart';
 import 'package:seasonal/ui/theme.dart';
@@ -17,11 +18,13 @@ class AppDependencies {
       : database = database ?? AppDatabase() {
     seasons = SeasonRepository(this.database);
     reminders = ReminderRepository(this.database);
+    support = SupportRepository(this.database);
   }
 
   final AppDatabase database;
   late final SeasonRepository seasons;
   late final ReminderRepository reminders;
+  late final SupportRepository support;
   final notifications = SeasonNotificationService();
 
   /// Re-schedules the end-of-season reminder from the saved settings and the

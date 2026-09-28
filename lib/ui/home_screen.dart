@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:seasonal/brand/palette.dart';
 import 'package:seasonal/brand/seasonal_mark.dart';
 import 'package:seasonal/data/app_database.dart';
+import 'package:seasonal/data/support_repository.dart';
 import 'package:seasonal/domain/season_math.dart';
 import 'package:seasonal/domain/season_timeline.dart';
 import 'package:seasonal/main.dart';
@@ -11,6 +12,8 @@ import 'package:seasonal/services/season_notifications.dart';
 import 'package:seasonal/ui/new_season_sheet.dart';
 import 'package:seasonal/ui/season_detail_screen.dart';
 import 'package:seasonal/ui/settings_screen.dart';
+import 'package:seasonal/ui/support_footer.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key, required this.dependencies});
@@ -52,6 +55,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 28),
                     _PastSeasonsSection(dependencies: dependencies),
+                    _SupportSection(dependencies: dependencies),
                   ],
                 );
               },
@@ -344,6 +348,46 @@ class _SwipeableSeasonCard extends StatelessWidget {
     if (confirmed != true) return;
     await dependencies.seasons.deleteSeason(season.id);
     await dependencies.rescheduleReminder();
+  }
+}
+
+/// The optional support footer. Off by default; streams the user's choice so
+/// hiding it takes effect immediately.
+class _SupportSection extends StatelessWidget {
+  const _SupportSection({required this.dependencies});
+
+  final AppDependencies dependencies;
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<SupportSetting>(
+      stream: dependencies.support.watch(),
+      builder: (context, snapshot) {
+        final setting = snapshot.data;
+        if (setting == null) return const SizedBox.shrink();
+        return SupportFooter(
+          setting: setting,
+          onOpen: () => _open(context),
+          onHide: () => dependencies.support.setShowFooter(false),
+        );
+      },
+    );
+  }
+
+  Future<void> _open(BuildContext context) async {
+    final uri = Uri.parse(SupportRepository.coffeeUrl);
+    // Opens the system browser. The app itself makes no network call
+    // (principle 5); this only hands a URL to the OS.
+    final launched = await launchUrl(
+      uri,
+      mode: LaunchMode.externalApplication,
+    );
+    if (launched || !context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Could not open $SupportRepository.coffeeUrl'),
+      ),
+    );
   }
 }
 

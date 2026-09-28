@@ -41,6 +41,9 @@ The leaf gradient runs **Ember → Amber** (`#A9532F → #C97B44 → #E0A659`).
 - **No red for destructive actions either.** Delete uses **Bark** with a
   confirm dialog, and edit uses **Amber**. Red is reserved for nothing; the
   palette stays free of it so the app never feels like a failure state.
+- **Third-party brand colours do not enter the app.** The optional "Buy me a
+  coffee" link uses Stone/Clay like any other quiet text link, never the
+  Buy-Me-a-Coffee yellow.
 - Contrast: Ink or Clay on Paper/White for body text; Stone only for
   non-essential labels.
 

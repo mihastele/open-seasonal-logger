@@ -230,4 +230,35 @@ void main() {
 
     await teardownApp(tester, deps);
   });
+
+  testWidgets('the coffee link is hidden by default', (tester) async {
+    final deps = testDependencies();
+
+    await tester.pumpWidget(SeasonalApp(dependencies: deps));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Buy me a coffee'), findsNothing);
+
+    await teardownApp(tester, deps);
+  });
+
+  testWidgets('the coffee link shows when enabled and hides when dismissed',
+      (tester) async {
+    final deps = testDependencies();
+    await deps.support.setShowFooter(true);
+
+    await tester.pumpWidget(SeasonalApp(dependencies: deps));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Buy me a coffee'), findsOneWidget);
+
+    // The inline dismiss button hides it and persists the choice.
+    await tester.tap(find.byTooltip('Hide this'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Buy me a coffee'), findsNothing);
+    expect((await deps.support.get()).showFooter, isFalse);
+
+    await teardownApp(tester, deps);
+  });
 }

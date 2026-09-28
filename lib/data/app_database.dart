@@ -53,28 +53,38 @@ class ReminderSettings extends Table {
       integer().withDefault(const Constant(9 * 60))();
 }
 
+/// A single-row table holding whether the optional "buy me a coffee" support
+/// footer is shown. It is off by default and the user can hide it at any time.
+class SupportSettings extends Table {
+  IntColumn get id => integer().autoIncrement()();
 
-@DriftDatabase(tables: [Seasons, ReminderSettings])
+  BoolColumn get showFooter => boolean().withDefault(const Constant(false))();
+}
+
+@DriftDatabase(tables: [Seasons, ReminderSettings, SupportSettings])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (m) async {
           await m.createAll();
           await _createInvariantIndexes();
-          await _seedReminderSettings();
+          await _seedSingletonRows();
         },
         onUpgrade: (m, from, to) async {
           if (from < 2) {
             await m.createTable(reminderSettings);
-            await _seedReminderSettings();
           }
+          if (from < 3) {
+            await m.createTable(supportSettings);
+          }
+          await _seedSingletonRows();
           // Recreate the invariant indexes; safe if they already exist.
           await _createInvariantIndexes();
         },
@@ -93,12 +103,12 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
-  Future<void> _seedReminderSettings() async {
-    final count = await reminderSettings.count().getSingle();
-    if (count == 0) {
-      await into(reminderSettings).insert(
-        ReminderSettingsCompanion.insert(),
-      );
+  Future<void> _seedSingletonRows() async {
+    if (await reminderSettings.count().getSingle() == 0) {
+      await into(reminderSettings).insert(ReminderSettingsCompanion.insert());
+    }
+    if (await supportSettings.count().getSingle() == 0) {
+      await into(supportSettings).insert(SupportSettingsCompanion.insert());
     }
   }
 

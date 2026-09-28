@@ -27,9 +27,13 @@ in [`site/`](site/README.md).
   a time you choose, switchable off entirely. Not a recurring habit schedule.
 - An end-of-season reflection of exactly three optional questions:
   *What did I make? What did I learn? Do I want to return to this someday?*
+- An optional, off-by-default "Buy me a coffee" link at the foot of the home
+  screen (`buymeacoffee.com/mihastele`). It uses the Seasonal palette, not the
+  Buy-Me-a-Coffee yellow, and can be hidden inline or from Settings.
 
 Everything lives on-device. There is no account, no backend, no network call,
-and no telemetry.
+and no telemetry. The coffee link only hands a URL to the system browser; the
+app itself never makes a network request.
 
 ## Setup
 
@@ -69,9 +73,9 @@ brand/
 site/             static story/brand website (no build step)
 lib/
   brand/    palette and the vector SeasonalMark widget
-  data/     Drift schema, SeasonRepository, ReminderRepository
+  data/     Drift schema, SeasonRepository, ReminderRepository, SupportRepository
   domain/   Pure season date math and timeline rules (no Flutter/Drift)
   services/ Local notifications
-  ui/       Home screen, season screen, new/edit season sheet, settings, theme
+  ui/       Home screen, season screen, new/edit sheet, settings, support footer
 test/       Principle tests, timeline/repository tests, migration, widgets
 ```

@@ -49,7 +49,7 @@ void main() {
     raw.execute('PRAGMA user_version = 1');
     raw.close();
 
-    // Open through Drift; the first query runs onUpgrade to v2.
+    // Open through Drift; the first query runs onUpgrade to the latest schema.
     final db = AppDatabase.forTesting(NativeDatabase(file));
     addTearDown(db.close);
 
@@ -61,6 +61,10 @@ void main() {
     final reminder = await db.select(db.reminderSettings).getSingle();
     expect(reminder.enabled, isTrue);
     expect(reminder.daysBeforeEnd, 5);
+
+    // The support settings table was created and seeded, off by default.
+    final support = await db.select(db.supportSettings).getSingle();
+    expect(support.showFooter, isFalse);
 
     // The single-active invariant survives the upgrade.
     expect(
