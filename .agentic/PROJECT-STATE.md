@@ -139,5 +139,27 @@
 - STOPPED — next: run on device to eyeball branding + settings; remaining open
   decisions (license, upcoming-season count, export/delete).
 
+### 2026-09-28 — Logo redesign: brush reads as a brush
+
+- The first mark (a leaf-shaped brush) did not read as a paintbrush. Redesigned
+  the mark: a tilted paintbrush (handle, ribbed metal ferrule, bristles
+  tapering to a point) leaving a fresh tapering stroke of paint.
+- Updated `brand/logo/mark.svg`, `brand/logo/lockup.svg`,
+  `brand/icons/icon.svg`, and regenerated all Android/iOS icons and the
+  standalone `brand/icons/icon-*.png`.
+- Rewrote `lib/brand/seasonal_mark.dart` to draw the new mark as a vector;
+  verified the Flutter render matches the SVG by rasterizing it in a throwaway
+  test (since removed).
+- Synced `site/assets/` and updated the mark description in `brand/BRAND.md`
+  and `site/index.html`.
+- Git: repo was already initialized with `origin` =
+  `git@github.com:mihastele/open-seasonal-logger.git`. Prior work was already
+  committed and pushed (`43de6e8 Update`). This logo change is committed and
+  pushed on top.
+- `flutter analyze` clean; 19 tests pass.
+- STOPPED — next: run on device to eyeball branding; remaining open decisions
+  (license, upcoming-season count, export/delete).
+
+
 
 

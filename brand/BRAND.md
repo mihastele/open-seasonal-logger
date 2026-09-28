@@ -6,9 +6,10 @@ calm. Nothing about it should feel like a dashboard, a score, or a deadline.
 
 ## The mark
 
-A **brush tip that has painted a leaf.** The leaf is the season; the brush is
-the act of exploring. The two are one shape, because a season is not the
-thing you finish — it is the act of making it.
+A **paintbrush drawing a stroke.** The brush is the act of exploring; the
+fresh stroke of paint it leaves behind is the season you are making. The
+brush is tilted, mid-motion, and the paint is still warm — this is something
+being worked on, not something finished and scored.
 
 - Full colour on light backgrounds, one colour on dark or tinted fills.
 - Clear space around the mark: at least 25% of the mark's height on all sides.

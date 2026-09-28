@@ -1,9 +1,11 @@
-import 'package:flutter/material.dart';
-import 'package:seasonal/brand/palette.dart';
+import 'dart:math' as math;
 
-/// The Seasonal mark: a brush tip that has painted a leaf.
+import 'package:flutter/material.dart';
+
+/// The Seasonal mark: a paintbrush drawing a stroke.
 ///
 /// Drawn as a vector so it stays crisp at any size and needs no asset bundle.
+/// Kept in sync with `brand/logo/mark.svg`.
 class SeasonalMark extends StatelessWidget {
   const SeasonalMark({super.key, this.size = 72});
 
@@ -26,74 +28,78 @@ class _MarkPainter extends CustomPainter {
     canvas.save();
     canvas.scale(s);
 
-    final leaf = Path()
-      ..moveTo(128, 28)
-      ..cubicTo(178, 54, 202, 112, 184, 162)
-      ..cubicTo(174, 192, 150, 208, 128, 212)
-      ..cubicTo(106, 208, 82, 192, 72, 162)
-      ..cubicTo(54, 112, 78, 54, 128, 28)
+    // The painted swash.
+    final paint = Path()
+      ..moveTo(22, 216)
+      ..cubicTo(40, 200, 62, 192, 86, 184)
+      ..cubicTo(112, 175, 132, 164, 146, 148)
+      ..cubicTo(150, 144, 153, 141, 156, 139)
+      ..cubicTo(153, 156, 145, 174, 128, 190)
+      ..cubicTo(106, 212, 72, 226, 42, 228)
+      ..cubicTo(32, 229, 24, 224, 22, 216)
       ..close();
     canvas.drawPath(
-      leaf,
+      paint,
       Paint()
         ..shader = const LinearGradient(
           begin: Alignment.bottomLeft,
           end: Alignment.topRight,
-          colors: SeasonalColors.leafGradient,
-        ).createShader(const Rect.fromLTWH(72, 28, 112, 184)),
+          colors: [Color(0xFFA9532F), Color(0xFFC97B44), Color(0xFFE0A659)],
+        ).createShader(const Rect.fromLTWH(22, 139, 134, 90)),
     );
 
-    final vein = Paint()
-      ..color = SeasonalColors.paper.withValues(alpha: 0.85)
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
+    // The brush: handle, ferrule, bristles, tilted 38 degrees.
+    canvas.save();
+    canvas.translate(128, 128);
+    canvas.rotate(38 * math.pi / 180);
+    canvas.translate(-128, -128);
+
     canvas.drawPath(
       Path()
-        ..moveTo(128, 52)
-        ..cubicTo(133, 100, 133, 158, 128, 198),
-      vein..strokeWidth = 8,
-    );
-    canvas.drawPath(
-      Path()
-        ..moveTo(128, 92)
-        ..cubicTo(110, 104, 98, 118, 92, 136),
-      vein..strokeWidth = 6,
-    );
-    canvas.drawPath(
-      Path()
-        ..moveTo(128, 92)
-        ..cubicTo(146, 104, 158, 118, 164, 136),
-      vein..strokeWidth = 6,
+        ..moveTo(116, 14)
+        ..cubicTo(116, 8, 121, 4, 128, 4)
+        ..cubicTo(135, 4, 140, 8, 140, 14)
+        ..lineTo(137, 92)
+        ..lineTo(119, 92)
+        ..close(),
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topRight,
+          end: Alignment.bottomLeft,
+          colors: [Color(0xFF8A6E5A), Color(0xFF5B4A3E)],
+        ).createShader(const Rect.fromLTWH(116, 4, 24, 88)),
     );
 
-    // Ferrule band.
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        const Rect.fromLTWH(90, 196, 76, 14),
-        const Radius.circular(5),
+        const Rect.fromLTWH(112, 90, 32, 28),
+        const Radius.circular(4),
       ),
-      Paint()..color = SeasonalColors.bark,
-    );
-    // Bristles.
-    canvas.drawPath(
-      Path()
-        ..moveTo(96, 210)
-        ..lineTo(160, 210)
-        ..lineTo(150, 234)
-        ..lineTo(106, 234)
-        ..close(),
-      Paint()..color = SeasonalColors.ember,
-    );
-    // Tip.
-    canvas.drawPath(
-      Path()
-        ..moveTo(106, 234)
-        ..lineTo(150, 234)
-        ..lineTo(128, 252)
-        ..close(),
-      Paint()..color = SeasonalColors.ink,
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topRight,
+          end: Alignment.bottomLeft,
+          colors: [Color(0xFFC9BEB2), Color(0xFF9A8B7C), Color(0xFF6F6155)],
+        ).createShader(const Rect.fromLTWH(112, 90, 32, 28)),
     );
 
+    canvas.drawPath(
+      Path()
+        ..moveTo(112, 116)
+        ..lineTo(144, 116)
+        ..lineTo(138, 158)
+        ..cubicTo(136, 176, 132, 190, 128, 202)
+        ..cubicTo(124, 190, 120, 176, 118, 158)
+        ..close(),
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topRight,
+          end: Alignment.bottomLeft,
+          colors: [Color(0xFFD18A4E), Color(0xFFB4633A)],
+        ).createShader(const Rect.fromLTWH(112, 116, 32, 86)),
+    );
+
+    canvas.restore();
     canvas.restore();
   }
 
