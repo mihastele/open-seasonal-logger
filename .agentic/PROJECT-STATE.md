@@ -259,4 +259,37 @@
 - STOPPED — next: commit + push; run on device to eyeball. Remaining open
   decisions: license, export design.
 
+### 2026-09-28 — Full icon + favicon pass (Android, Linux, site, web)
+
+- New master `brand/icons/foreground.svg`: brush mark at 50% on transparency
+  for masked-icon contexts (Android adaptive, web maskable).
+- Android: adaptive icon (`mipmap-anydpi-v26/ic_launcher.xml`) with Linen
+  background (`values/colors.xml`) + foreground PNGs at all 5 densities;
+  legacy `ic_launcher.png` re-rendered; pre-v21 splash tinted from white to
+  Linen (v21+ keeps following the system day/night background).
+- Linux: window/taskbar icon — `linux/runner/assets/app_icon.png` is installed
+  to `bundle/data/` by CMake and loaded best-effort in `my_application.cc`;
+  plus validated `linux/com.seasonal.seasonal.desktop` and a full hicolor icon
+  tree (`linux/icons/hicolor/`). README documents the optional install step.
+- Site: full favicon set (`favicon.svg`, multi-size `favicon.ico`, 16/32 PNG,
+  `apple-touch-icon.png`), `theme-color`, and `site.webmanifest`.
+- Web shell rebranded (was Flutter-blue defaults): Seasonal icons incl.
+  maskables, manifest name/colors/description, page title, theme-color.
+- `brand/render-icons.sh` now renders ALL of the above from the two SVG
+  masters (needs `rsvg-convert`; Pillow-gated step for .ico/maskables).
+  This session's PNGs were bootstrapped with system librsvg via
+  `/tmp/render_icons.py` (throwaway) since rsvg-convert isn't installed.
+- Tests: 54 pass. New `test/app_icons_test.dart` (8 tests): every icon ref in
+  manifests/pages/native shells resolves to a real PNG; SVG favicon stays in
+  sync with the master; web shell has no default blue left. Analyze clean.
+- Verified: `flutter build linux` (icon lands in bundle), `flutter build apk
+  --debug` (APK contains anydpi XML + foregrounds), `flutter build web`,
+  `desktop-file-validate`, and a visual contact sheet of tiny/masked renders.
+- Incidental: `test/widget_test.dart` (default counter-app template referencing
+  nonexistent `MyApp`, dropped by an untracked `flutter create --platforms=web`
+  run between sessions) broke compilation of the whole suite. Moved aside to
+  `/tmp/widget_test.dart.orig`, not deleted — restore or drop at will.
+- STOPPED — next: commit + push; eyeball launcher/window icons on device.
+  Remaining open decisions: license, export design.
+
 

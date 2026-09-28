@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Seasonal
+Comment=What am I exploring this season?
+Exec=seasonal
+Icon=com.seasonal.seasonal
+Terminal=false
+Categories=Utility;
+StartupWMClass=com.seasonal.seasonal

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Adaptive-icon background: Linen, the lower stop of the icon gradient.
+         Must stay in sync with brand/BRAND.md. -->
+    <color name="ic_launcher_background">#F3E9DE</color>
+</resources>

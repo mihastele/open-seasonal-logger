@@ -52,6 +52,18 @@ dart run build_runner build   # regenerate Drift code after schema changes
 flutter run -d linux      # or -d android, -d ios
 ```
 
+### Linux desktop integration (optional)
+
+The window icon works out of the box. To also get a launcher entry with
+the Seasonal icon when running outside `flutter run`:
+
+```sh
+# After flutter build linux:
+cp linux/com.seasonal.seasonal.desktop ~/.local/share/applications/
+cp -r linux/icons/hicolor ~/.local/share/icons/
+update-desktop-database ~/.local/share/applications
+```
+
 ## Test
 
 ```sh

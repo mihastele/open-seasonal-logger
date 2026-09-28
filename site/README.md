@@ -23,6 +23,10 @@ Cloudflare Pages, an S3 bucket). There is nothing to compile.
 - `index.html` — the story and product principles
 - `styles.css` — the brand palette as CSS variables, with dark mode
 - `assets/` — the logo mark, lockup, and app icon
+- `favicon.svg`, `favicon.ico`, `site.webmanifest` — installable icon set
+
+All icon files are rendered from `brand/icons/` by `brand/render-icons.sh`;
+edit the SVG masters and re-run the script instead of touching outputs.
 
 The palette here must stay in sync with `brand/BRAND.md` and
 `lib/brand/palette.dart`.
