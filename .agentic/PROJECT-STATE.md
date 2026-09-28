@@ -241,4 +241,22 @@
 - STOPPED — next: commit + push; run on device to eyeball the default-on footer.
   Remaining open decisions: license, export design.
 
+### 2026-09-28 — Rotating new-season examples (40 pairs)
+
+- New `lib/domain/season_examples.dart`: 40 `SeasonExample(title, description)`
+  pairs across many domains (electronics, painting, language, music, cooking,
+  movement, gardening, crafts, nature, community, …). The original
+  "Build a Tiny PLC" pair is kept as entry #1.
+- `randomSeasonExample()` picks one per sheet opening and never repeats
+  back-to-back. The sheet stores it in a `late final` so it is stable while
+  open; invisible in edit mode (fields prefilled).
+- Copy follows brand voice (warm, unhurried) and principle 3: no scoring,
+  quota, cadence, or guilt language. Deliberately avoided "daily/weekly/one a
+  week" framings to stay consistent with the one-reminder decision.
+- Tests: 46 pass. New `test/season_examples_test.dart` (count is 40, unique
+  non-empty titles/descriptions, principle-3 word scan, membership,
+  no-back-to-back-repeat). `flutter analyze` clean. README domain line updated.
+- STOPPED — next: commit + push; run on device to eyeball. Remaining open
+  decisions: license, export design.
+
 

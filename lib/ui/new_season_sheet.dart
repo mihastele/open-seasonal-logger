@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:seasonal/data/app_database.dart';
 import 'package:seasonal/data/season_repository.dart';
+import 'package:seasonal/domain/season_examples.dart';
 import 'package:seasonal/domain/season_math.dart';
 import 'package:seasonal/domain/season_timeline.dart';
 import 'package:seasonal/main.dart';
@@ -49,6 +50,10 @@ class _NewSeasonSheetState extends State<_NewSeasonSheet> {
   String? _error;
   bool _ready = false;
   bool _hasActiveSeason = false;
+
+  /// Placeholder example, picked once per opening so every visit feels fresh.
+  /// (Invisible in edit mode, where the fields are prefilled.)
+  late final SeasonExample _example = randomSeasonExample();
 
   bool get _isEditing => widget.editing != null;
 
@@ -147,7 +152,7 @@ class _NewSeasonSheetState extends State<_NewSeasonSheet> {
                 TextField(
                   controller: _title,
                   textCapitalization: TextCapitalization.sentences,
-                  decoration: _decoration('Title', hint: 'Build a Tiny PLC'),
+                  decoration: _decoration('Title', hint: _example.title),
                 ),
                 const SizedBox(height: 14),
                 TextField(
@@ -157,7 +162,7 @@ class _NewSeasonSheetState extends State<_NewSeasonSheet> {
                   textCapitalization: TextCapitalization.sentences,
                   decoration: _decoration(
                     'Description (optional)',
-                    hint: 'Learn embedded control by actually building one.',
+                    hint: _example.description,
                   ),
                 ),
                 const SizedBox(height: 20),

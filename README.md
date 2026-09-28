@@ -75,7 +75,7 @@ site/             static story/brand website (no build step)
 lib/
   brand/    palette and the vector SeasonalMark widget
   data/     Drift schema, SeasonRepository, ReminderRepository, SupportRepository
-  domain/   Pure season date math and timeline rules (no Flutter/Drift)
+  domain/   Pure season date math, timeline rules, rotating examples (no Flutter/Drift)
   services/ Local notifications
   ui/       Home screen, season screen, new/edit sheet, settings, support footer
 test/       Principle tests, timeline/repository tests, migration, widgets
