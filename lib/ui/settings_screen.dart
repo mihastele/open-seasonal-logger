@@ -239,7 +239,7 @@ class _ChoiceTile<T> extends StatelessWidget {
   }
 }
 
-/// The optional support toggle. Off by default; the user can turn it back on.
+/// The optional support toggle. On by default; the user can hide it again.
 class _SupportSection extends StatelessWidget {
   const _SupportSection({required this.dependencies});
 
@@ -250,7 +250,7 @@ class _SupportSection extends StatelessWidget {
     return StreamBuilder<SupportSetting>(
       stream: dependencies.support.watch(),
       builder: (context, snapshot) {
-        final show = snapshot.data?.showFooter ?? false;
+        final show = snapshot.data?.showFooter ?? true;
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -265,7 +265,7 @@ class _SupportSection extends StatelessWidget {
               child: SwitchListTile(
                 title: const Text('Show the coffee link'),
                 subtitle: const Text(
-                  'Off by default. Nothing else in the app asks for anything.',
+                  'On by default. Nothing else in the app asks for anything.',
                 ),
                 value: show,
                 activeThumbColor: SeasonalColors.ember,

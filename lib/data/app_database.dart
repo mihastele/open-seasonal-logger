@@ -54,11 +54,12 @@ class ReminderSettings extends Table {
 }
 
 /// A single-row table holding whether the optional "buy me a coffee" support
-/// footer is shown. It is off by default and the user can hide it at any time.
+/// footer is shown. It is on by default; the user's choice is saved and they
+/// can hide it at any time.
 class SupportSettings extends Table {
   IntColumn get id => integer().autoIncrement()();
 
-  BoolColumn get showFooter => boolean().withDefault(const Constant(false))();
+  BoolColumn get showFooter => boolean().withDefault(const Constant(true))();
 }
 
 @DriftDatabase(tables: [Seasons, ReminderSettings, SupportSettings])
@@ -68,7 +69,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -83,6 +84,15 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 3) {
             await m.createTable(supportSettings);
+          }
+          if (from == 3) {
+            // The default flipped from hidden to shown. Existing rows were
+            // seeded with `false` as a default, not a deliberate choice that
+            // has since changed, so move still-default rows to the new one.
+            await customStatement(
+              'UPDATE support_settings SET show_footer = 1 '
+              'WHERE show_footer = 0',
+            );
           }
           await _seedSingletonRows();
           // Recreate the invariant indexes; safe if they already exist.

@@ -1002,7 +1002,7 @@ class $SupportSettingsTable extends SupportSettings
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'CHECK ("show_footer" IN (0, 1))',
     ),
-    defaultValue: const Constant(false),
+    defaultValue: const Constant(true),
   );
   @override
   List<GeneratedColumn> get $columns => [id, showFooter];

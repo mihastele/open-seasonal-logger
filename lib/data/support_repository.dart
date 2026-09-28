@@ -4,8 +4,8 @@ import 'package:seasonal/data/app_database.dart';
 /// The optional "buy me a coffee" support link.
 ///
 /// This is not a shop, a subscription, or a nudge. It is a single, quiet link
-/// at the foot of the home screen, off by default, that the user can hide
-/// again at any time.
+/// at the foot of the home screen, shown by default, that the user can hide
+/// again at any time. The choice is saved.
 class SupportRepository {
   static const String coffeeUrl = 'https://buymeacoffee.com/mihastele';
 

@@ -6,7 +6,7 @@ import 'package:seasonal/data/app_database.dart';
 ///
 /// Deliberately understated: it uses the Seasonal palette (never the
 /// Buy-Me-a-Coffee brand yellow), sits below everything else, and can be
-/// hidden for good from Settings. Off by default.
+/// hidden for good from Settings. Shown by default; hiding is remembered.
 class SupportFooter extends StatelessWidget {
   const SupportFooter({
     super.key,

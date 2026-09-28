@@ -7,7 +7,7 @@
 | Repo                  | Not yet created                      | 2026-09-28 |
 | License               | TBD                                  |            |
 | Frontend              | Flutter 3.47.5 / Dart 3.13.4         | 2026-09-28 |
-| Database              | Drift / SQLite (on-device), schema v2 | 2026-09-28 |
+| Database              | Drift / SQLite (on-device), schema v4 | 2026-09-28 |
 | Backend               | None — v0.1 is local-only            | 2026-09-28 |
 | Object storage        | None — v0.1 has no uploads/media     | 2026-09-28 |
 | Notifications         | Local only, one reminder, user-timed | 2026-09-28 |
@@ -218,8 +218,27 @@
 - STOPPED — next: commit + push; run on device to eyeball the footer + settings.
   Remaining open decisions: license, export design.
 
+### 2026-09-28 — Coffee link on by default
 
-
-
+- REVERSAL of the prior decision: the "Buy me a coffee" link is now shown by
+  default. The user's choice is saved (via the existing `SupportSettings` row),
+  and the inline X plus the Settings toggle still hide it for good.
+- SCHEMA CHANGE, v3 -> v4: `SupportSettings.showFooter` default flipped
+  `false` -> `true`. `schemaVersion => 4`; `onUpgrade` (from == 3) updates the
+  existing still-default row to `1` so installs seeded before the flip actually
+  show the link, then `_seedSingletonRows` handles fresh/earlier upgrades.
+  Regenerated Drift types with build_runner.
+- Copy updated: Settings subtitle now reads "On by default", doc comments in
+  `support_repository.dart`, `support_footer.dart`, `home_screen.dart`, and the
+  README updated.
+- Tests: 41 pass. `support_test.dart` now asserts the default is ON;
+  home widget test asserts the link shows by default and that hiding persists
+  across a fresh app over the same database; new migration test builds a real
+  v3 DB and asserts v3 -> v4 flips the seed to shown while preserving seasons
+  and the reminder preference. `flutter analyze` clean.
+- DECISION: no secret/network change — opening the link still only hands a URL
+  to the system browser (principle 5).
+- STOPPED — next: commit + push; run on device to eyeball the default-on footer.
+  Remaining open decisions: license, export design.
 
 

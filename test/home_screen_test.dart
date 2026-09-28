@@ -231,9 +231,30 @@ void main() {
     await teardownApp(tester, deps);
   });
 
-  testWidgets('the coffee link is hidden by default', (tester) async {
+  testWidgets('the coffee link is shown by default', (tester) async {
     final deps = testDependencies();
 
+    await tester.pumpWidget(SeasonalApp(dependencies: deps));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Buy me a coffee'), findsOneWidget);
+
+    await teardownApp(tester, deps);
+  });
+
+  testWidgets('hiding the coffee link is remembered across sessions',
+      (tester) async {
+    final deps = testDependencies();
+
+    await tester.pumpWidget(SeasonalApp(dependencies: deps));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Hide this'));
+    await tester.pumpAndSettle();
+    expect(find.text('Buy me a coffee'), findsNothing);
+
+    // A fresh app over the same database sees the saved preference.
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
     await tester.pumpWidget(SeasonalApp(dependencies: deps));
     await tester.pumpAndSettle();
 

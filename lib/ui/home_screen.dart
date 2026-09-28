@@ -351,8 +351,8 @@ class _SwipeableSeasonCard extends StatelessWidget {
   }
 }
 
-/// The optional support footer. Off by default; streams the user's choice so
-/// hiding it takes effect immediately.
+/// The optional support footer. On by default; streams the user's choice so
+/// hiding it takes effect immediately and is remembered.
 class _SupportSection extends StatelessWidget {
   const _SupportSection({required this.dependencies});
 

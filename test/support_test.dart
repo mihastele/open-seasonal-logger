@@ -4,12 +4,12 @@ import 'package:seasonal/data/support_repository.dart';
 import 'test_database.dart';
 
 void main() {
-  test('the support footer is off by default', () async {
+  test('the support footer is on by default', () async {
     final db = newTestDatabase();
     addTearDown(db.close);
     final repo = SupportRepository(db);
 
-    expect((await repo.get()).showFooter, isFalse);
+    expect((await repo.get()).showFooter, isTrue);
   });
 
   test('the support footer preference can be toggled and read back', () async {
