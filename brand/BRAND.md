@@ -38,6 +38,9 @@ The leaf gradient runs **Ember → Amber** (`#A9532F → #C97B44 → #E0A659`).
 - Warm neutrals carry the design; colours are accents, never a rainbow.
 - **No red error/failure colour.** A season ending is never an error.
 - **No green "success" colour for completion** — a season is not a task.
+- **No red for destructive actions either.** Delete uses **Bark** with a
+  confirm dialog, and edit uses **Amber**. Red is reserved for nothing; the
+  palette stays free of it so the app never feels like a failure state.
 - Contrast: Ink or Clay on Paper/White for body text; Stone only for
   non-essential labels.
 

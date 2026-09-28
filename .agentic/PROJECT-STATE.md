@@ -160,6 +160,40 @@
 - STOPPED — next: run on device to eyeball branding; remaining open decisions
   (license, upcoming-season count, export/delete).
 
+### 2026-09-28 — Swipe edit/delete and the 2-upcoming limit
+
+- Swipe-to-reveal on current + upcoming cards: Edit (Amber pencil) and Delete
+  (Bark trash). Uses `flutter_slidable` (MIT).
+- DECISION (user): the red destructive button was refused in favour of the
+  brand's no-red rule. Delete is Bark with a confirm dialog; edit is Amber.
+  BRAND.md updated with the explicit "no red for destructive either" rule.
+- DECISION (user): delete is a hard delete (row + reflection removed), after
+  confirmation. This is the "how does this get deleted?" answer from AGENTS.md.
+- New lifecycle limit, no schema change needed: at most 2 upcoming seasons
+  (one active + 2 upcoming = full). Enforced in `SeasonRepository`
+  (`UpcomingSeasonLimit`) in addition to the UI hiding the button.
+- New pure domain logic `lib/domain/season_timeline.dart` (`SeasonTimeline`,
+  `PlannedSlot`, `maxUpcomingSeasons`): decides which slot is missing, the
+  suggested start date, and whether the timeline is full.
+  - Placement rule (user): no active -> new season is active, starts today;
+    otherwise fill the first gap in the active+upcoming chain (start = previous
+    season's end date); if no gap, append after the last planned season.
+- Repository additions: `watchUpcomingSeasons`, `upcomingSeasons`, `all`,
+  `updateSeason`, `deleteSeason`. `createSeason` now refuses a 3rd upcoming.
+- Sheet (`new_season_sheet.dart`) now supports create and edit modes, and
+  prefills the suggested slot from the timeline.
+- Home screen now renders one `watchAll` stream, lists up to 2 upcoming, and
+  hides "New season" when full (label changed from "Plan a season").
+- Notifications made fully best-effort: a scheduling failure can no longer
+  break saving a season (this caused a headless-test crash).
+- Tests: 34 pass. Added `season_timeline_test.dart` (7 cases) and repository
+  tests for the 3rd-upcoming limit, hard delete, and update. Widget tests for
+  swipe reveal, delete flow, edit flow, and FAB disappearing when full.
+  `flutter analyze` clean.
+- STOPPED — next: commit + push; run on device to eyeball the swipe UX.
+  Remaining open decisions: license, export/delete-export design.
+
+
 
 
 

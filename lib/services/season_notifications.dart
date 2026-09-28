@@ -88,28 +88,38 @@ class SeasonNotificationService {
     final reference = now ?? DateTime.now();
     if (!fireOn.isAfter(reference)) return;
 
-    await _plugin.zonedSchedule(
-      id: _reminderId,
-      title: 'Your season is ending soon',
-      body: 'What would you like to explore next?',
-      scheduledDate: tz.TZDateTime.from(fireOn, tz.local),
-      notificationDetails: const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'seasonal_end_of_season',
-          'Season endings',
-          channelDescription: 'A gentle reminder as a season draws to a close.',
-          importance: Importance.defaultImportance,
-          priority: Priority.defaultPriority,
+    try {
+      await _plugin.zonedSchedule(
+        id: _reminderId,
+        title: 'Your season is ending soon',
+        body: 'What would you like to explore next?',
+        scheduledDate: tz.TZDateTime.from(fireOn, tz.local),
+        notificationDetails: const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'seasonal_end_of_season',
+            'Season endings',
+            channelDescription:
+                'A gentle reminder as a season draws to a close.',
+            importance: Importance.defaultImportance,
+            priority: Priority.defaultPriority,
+          ),
+          iOS: DarwinNotificationDetails(),
         ),
-        iOS: DarwinNotificationDetails(),
-      ),
-      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-    );
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      );
+    } catch (_) {
+      // Reminders are best-effort; a scheduling failure must never break
+      // saving a season.
+    }
   }
 
   Future<void> cancelReminder() async {
-    if (Platform.isAndroid || Platform.isIOS) {
-      await _plugin.cancel(id: _reminderId);
+    try {
+      if (Platform.isAndroid || Platform.isIOS) {
+        await _plugin.cancel(id: _reminderId);
+      }
+    } catch (_) {
+      // Best-effort, same as above.
     }
   }
 }

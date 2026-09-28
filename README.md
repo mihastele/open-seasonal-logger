@@ -16,8 +16,13 @@ in [`site/`](site/README.md).
 
 - One active season at a time, with a start date and a length in weeks.
 - A home screen showing the current season, what's up next, and past seasons.
-- Planning the next season creates a separate **upcoming** season; it never
-  ends or overwrites the current one.
+- Up to two upcoming seasons can be planned ahead. When one active plus two
+  future seasons exist, the "New season" button disappears until a slot
+  frees up. Creating fills the first gap in the timeline, so a deleted middle
+  season can be replaced in place.
+- Swipe any current or upcoming season to reveal edit (amber pencil) and
+  delete (bark trash, with a confirm dialog) actions. Edit updates the
+  existing season; delete permanently removes it and its reflection.
 - A single, user-timed reminder five (or 1/3/7) days before a season ends, at
   a time you choose, switchable off entirely. Not a recurring habit schedule.
 - An end-of-season reflection of exactly three optional questions:
@@ -65,8 +70,8 @@ site/             static story/brand website (no build step)
 lib/
   brand/    palette and the vector SeasonalMark widget
   data/     Drift schema, SeasonRepository, ReminderRepository
-  domain/   Pure season date math, free of Flutter and Drift
+  domain/   Pure season date math and timeline rules (no Flutter/Drift)
   services/ Local notifications
-  ui/       Home screen, season screen, new-season sheet, settings, theme
-test/       Principle tests, migration test, and widget tests
+  ui/       Home screen, season screen, new/edit season sheet, settings, theme
+test/       Principle tests, timeline/repository tests, migration, widgets
 ```

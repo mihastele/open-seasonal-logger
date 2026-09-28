@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
 import 'package:seasonal/brand/palette.dart';
 import 'package:seasonal/brand/seasonal_mark.dart';
 import 'package:seasonal/data/app_database.dart';
 import 'package:seasonal/domain/season_math.dart';
+import 'package:seasonal/domain/season_timeline.dart';
 import 'package:seasonal/main.dart';
 import 'package:seasonal/services/season_notifications.dart';
 import 'package:seasonal/ui/new_season_sheet.dart';
@@ -22,44 +24,58 @@ class HomeScreen extends StatelessWidget {
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 560),
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(24, 32, 24, 40),
-              children: [
-                _Header(
-                  onSettings: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          SettingsScreen(dependencies: dependencies),
+            child: StreamBuilder<List<Season>>(
+              stream: dependencies.seasons.watchAll(),
+              builder: (context, snapshot) {
+                final seasons = snapshot.data ?? const <Season>[];
+                final timeline = SeasonTimeline(seasons);
+                return ListView(
+                  padding: const EdgeInsets.fromLTRB(24, 32, 24, 40),
+                  children: [
+                    _Header(
+                      onSettings: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              SettingsScreen(dependencies: dependencies),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 32),
-                _ActiveSeasonSection(dependencies: dependencies),
-                const SizedBox(height: 28),
-                _UpcomingSection(dependencies: dependencies),
-                const SizedBox(height: 28),
-                _PastSeasonsSection(dependencies: dependencies),
-              ],
+                    const SizedBox(height: 32),
+                    _ActiveSeasonSection(
+                      dependencies: dependencies,
+                      timeline: timeline,
+                    ),
+                    const SizedBox(height: 28),
+                    _UpcomingSection(
+                      dependencies: dependencies,
+                      timeline: timeline,
+                    ),
+                    const SizedBox(height: 28),
+                    _PastSeasonsSection(dependencies: dependencies),
+                  ],
+                );
+              },
             ),
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _planNextSeason(context),
-        icon: const Icon(Icons.add),
-        label: const Text('Plan a season'),
+      floatingActionButton: StreamBuilder<List<Season>>(
+        stream: dependencies.seasons.watchAll(),
+        builder: (context, snapshot) {
+          final timeline = SeasonTimeline(snapshot.data ?? const <Season>[]);
+          if (timeline.isFull) return const SizedBox.shrink();
+          return FloatingActionButton.extended(
+            onPressed: () => _planNextSeason(context),
+            icon: const Icon(Icons.add),
+            label: const Text('New season'),
+          );
+        },
       ),
     );
   }
 
   Future<void> _planNextSeason(BuildContext context) async {
-    final active = await dependencies.seasons.activeSeason();
-    if (!context.mounted) return;
-    await showNewSeasonSheet(
-      context,
-      dependencies: dependencies,
-      hasActiveSeason: active != null,
-    );
+    await showNewSeasonSheet(context, dependencies: dependencies);
   }
 }
 
@@ -110,7 +126,7 @@ class _SectionLabel extends StatelessWidget {
           fontSize: 12,
           letterSpacing: 3,
           fontWeight: FontWeight.w600,
-          color: Color(0xFF8A7A6B),
+          color: SeasonalColors.stone,
         ),
       ),
     );
@@ -118,70 +134,57 @@ class _SectionLabel extends StatelessWidget {
 }
 
 class _ActiveSeasonSection extends StatelessWidget {
-  const _ActiveSeasonSection({required this.dependencies});
+  const _ActiveSeasonSection({
+    required this.dependencies,
+    required this.timeline,
+  });
 
   final AppDependencies dependencies;
+  final SeasonTimeline timeline;
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<Season?>(
-      stream: dependencies.seasons.watchActiveSeason(),
-      builder: (context, snapshot) {
-        final season = snapshot.data;
-        final now = DateTime.now();
-        if (season == null) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const _SectionLabel('CURRENT SEASON'),
-              _EmptyCard(
-                child: Text(
-                  'Nothing active right now.\n'
-                  'What would you like to explore next?',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: const Color(0xFF6B5D50),
-                        height: 1.5,
-                      ),
-                ),
-              ),
-            ],
-          );
-        }
-
-        final endingSoon = SeasonMath.daysRemaining(
-              season.startDate,
-              season.durationWeeks,
-              now,
-            ) <=
-            SeasonNotificationService.remindDaysBeforeEnd;
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _SectionLabel(endingSoon ? 'CURRENT SEASON · ENDING SOON' : 'CURRENT SEASON'),
-            _SeasonCard(
-              season: season,
-              now: now,
-              onTap: () => _open(context, season),
+    final season = timeline.active;
+    final now = DateTime.now();
+    if (season == null) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _SectionLabel('CURRENT SEASON'),
+          const _EmptyCard(
+            child: Text(
+              'Nothing active right now.\n'
+              'What would you like to explore next?',
+              style: TextStyle(color: SeasonalColors.clay, height: 1.5),
             ),
-            if (endingSoon) ...[
-              const SizedBox(height: 12),
-              const _GentlePrompt(),
-            ],
-          ],
-        );
-      },
-    );
-  }
+          ),
+        ],
+      );
+    }
 
-  void _open(BuildContext context, Season season) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => SeasonDetailScreen(
-          dependencies: dependencies,
-          seasonId: season.id,
+    final endingSoon = SeasonMath.daysRemaining(
+          season.startDate,
+          season.durationWeeks,
+          now,
+        ) <=
+        SeasonNotificationService.remindDaysBeforeEnd;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionLabel(
+          endingSoon ? 'CURRENT SEASON · ENDING SOON' : 'CURRENT SEASON',
         ),
-      ),
+        _SwipeableSeasonCard(
+          dependencies: dependencies,
+          season: season,
+          now: now,
+        ),
+        if (endingSoon) ...[
+          const SizedBox(height: 12),
+          const _GentlePrompt(),
+        ],
+      ],
     );
   }
 }
@@ -194,61 +197,153 @@ class _GentlePrompt extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF3E9DE),
+        color: SeasonalColors.linen,
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Text(
+      child: const Text(
         '🍂 Your season is ending soon.\nWhat would you like to explore next?',
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: const Color(0xFF6B5D50),
-              height: 1.5,
-            ),
+        style: TextStyle(color: SeasonalColors.clay, height: 1.5),
       ),
     );
   }
 }
 
 class _UpcomingSection extends StatelessWidget {
-  const _UpcomingSection({required this.dependencies});
+  const _UpcomingSection({
+    required this.dependencies,
+    required this.timeline,
+  });
 
   final AppDependencies dependencies;
+  final SeasonTimeline timeline;
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<Season?>(
-      stream: dependencies.seasons.watchUpcomingSeason(),
-      builder: (context, snapshot) {
-        final season = snapshot.data;
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const _SectionLabel('UP NEXT'),
-            if (season == null)
-              _EmptyCard(
-                child: Text(
-                  'No season planned yet.',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: const Color(0xFF8A7A6B),
-                      ),
-                ),
-              )
-            else
-              _SeasonCard(
+    final upcoming = timeline.upcoming;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionLabel(
+          'UP NEXT${upcoming.isEmpty ? '' : ' (${upcoming.length}/$maxUpcomingSeasons)'}',
+        ),
+        if (upcoming.isEmpty)
+          const _EmptyCard(
+            child: Text(
+              'No season planned yet.',
+              style: TextStyle(color: SeasonalColors.stone),
+            ),
+          )
+        else
+          ...upcoming.map(
+            (season) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: _SwipeableSeasonCard(
+                dependencies: dependencies,
                 season: season,
                 compact: true,
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => SeasonDetailScreen(
-                      dependencies: dependencies,
-                      seasonId: season.id,
-                    ),
-                  ),
-                ),
               ),
-          ],
-        );
-      },
+            ),
+          ),
+      ],
     );
+  }
+}
+
+/// A season card that reveals an edit (amber pencil) and delete (bark trash)
+/// action when swiped. There is deliberately no red: red means failure, and an
+/// ending season is not a failure (see brand/BRAND.md).
+class _SwipeableSeasonCard extends StatelessWidget {
+  const _SwipeableSeasonCard({
+    required this.dependencies,
+    required this.season,
+    this.now,
+    this.compact = false,
+  });
+
+  final AppDependencies dependencies;
+  final Season season;
+  final DateTime? now;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    return Slidable(
+      key: ValueKey(season.id),
+      endActionPane: ActionPane(
+        motion: const DrawerMotion(),
+        extentRatio: 0.5,
+        children: [
+          SlidableAction(
+            onPressed: (_) => _edit(context),
+            backgroundColor: SeasonalColors.amber,
+            foregroundColor: Colors.white,
+            icon: Icons.edit,
+            label: 'Edit',
+          ),
+          SlidableAction(
+            onPressed: (_) => _delete(context),
+            backgroundColor: SeasonalColors.bark,
+            foregroundColor: Colors.white,
+            icon: Icons.delete_outline,
+            label: 'Delete',
+          ),
+        ],
+      ),
+      child: _SeasonCard(
+        season: season,
+        now: now,
+        compact: compact,
+        onTap: () => _open(context),
+      ),
+    );
+  }
+
+  void _open(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => SeasonDetailScreen(
+          dependencies: dependencies,
+          seasonId: season.id,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _edit(BuildContext context) async {
+    await showNewSeasonSheet(
+      context,
+      dependencies: dependencies,
+      editing: season,
+    );
+  }
+
+  Future<void> _delete(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Delete “${season.title}”?'),
+        content: const Text(
+          'This permanently removes the season and any reflection. '
+          'This cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Keep it'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: SeasonalColors.bark,
+            ),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    await dependencies.seasons.deleteSeason(season.id);
+    await dependencies.rescheduleReminder();
   }
 }
 
@@ -268,12 +363,10 @@ class _PastSeasonsSection extends StatelessWidget {
           children: [
             const _SectionLabel('PAST SEASONS'),
             if (seasons.isEmpty)
-              _EmptyCard(
+              const _EmptyCard(
                 child: Text(
                   'Nothing here yet.',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: const Color(0xFF8A7A6B),
-                      ),
+                  style: TextStyle(color: SeasonalColors.stone),
                 ),
               )
             else
@@ -333,7 +426,7 @@ class _PastRow extends StatelessWidget {
                       '${formatter.format(SeasonMath.endDate(season.startDate, season.durationWeeks))}',
                       style: const TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF8A7A6B),
+                        color: SeasonalColors.stone,
                       ),
                     ),
                   ],
@@ -413,6 +506,7 @@ class _SeasonCard extends StatelessWidget {
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.3,
+                  color: SeasonalColors.ink,
                 ),
               ),
               if (season.description != null &&
@@ -422,7 +516,7 @@ class _SeasonCard extends StatelessWidget {
                 Text(
                   season.description!,
                   style: const TextStyle(
-                    color: Color(0xFF6B5D50),
+                    color: SeasonalColors.clay,
                     height: 1.5,
                   ),
                 ),
@@ -433,7 +527,7 @@ class _SeasonCard extends StatelessWidget {
                   'Week $week of ${season.durationWeeks}',
                   style: const TextStyle(
                     fontSize: 13,
-                    color: Color(0xFF8A7A6B),
+                    color: SeasonalColors.stone,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -447,7 +541,7 @@ class _SeasonCard extends StatelessWidget {
                           minHeight: 8,
                           backgroundColor: const Color(0xFFEDE4DA),
                           valueColor: const AlwaysStoppedAnimation(
-                            Color(0xFFB4633A),
+                            SeasonalColors.ember,
                           ),
                         ),
                       ),
@@ -457,7 +551,7 @@ class _SeasonCard extends StatelessWidget {
                       '$percent%',
                       style: const TextStyle(
                         fontSize: 13,
-                        color: Color(0xFF8A7A6B),
+                        color: SeasonalColors.stone,
                       ),
                     ),
                   ],
@@ -467,7 +561,7 @@ class _SeasonCard extends StatelessWidget {
                   'Ends ${DateFormat.yMMMMd().format(ends)}',
                   style: const TextStyle(
                     fontSize: 13,
-                    color: Color(0xFF8A7A6B),
+                    color: SeasonalColors.stone,
                   ),
                 ),
                 const SizedBox(height: 18),
@@ -485,7 +579,7 @@ class _SeasonCard extends StatelessWidget {
                   'Starts ${DateFormat.yMMMMd().format(season.startDate)}',
                   style: const TextStyle(
                     fontSize: 13,
-                    color: Color(0xFF8A7A6B),
+                    color: SeasonalColors.stone,
                   ),
                 ),
               ],

@@ -3,17 +3,18 @@ import 'package:intl/intl.dart';
 import 'package:seasonal/data/app_database.dart';
 import 'package:seasonal/data/season_repository.dart';
 import 'package:seasonal/domain/season_math.dart';
+import 'package:seasonal/domain/season_timeline.dart';
 import 'package:seasonal/main.dart';
 
-/// Bottom sheet for planning what to explore next.
+/// Bottom sheet for creating or editing a season.
 ///
-/// Planning never ends or overwrites the current season (principle 2). When a
-/// season is already active, this creates a separate `upcoming` season that
-/// begins on or after the current season ends.
+/// Planning never ends or overwrites the current season (principle 2). When
+/// one is already active, a new season is created as a separate `upcoming`
+/// row that begins on or after the current season ends.
 Future<void> showNewSeasonSheet(
   BuildContext context, {
   required AppDependencies dependencies,
-  required bool hasActiveSeason,
+  Season? editing,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -21,7 +22,7 @@ Future<void> showNewSeasonSheet(
     backgroundColor: Colors.transparent,
     builder: (_) => _NewSeasonSheet(
       dependencies: dependencies,
-      hasActiveSeason: hasActiveSeason,
+      editing: editing,
     ),
   );
 }
@@ -29,11 +30,11 @@ Future<void> showNewSeasonSheet(
 class _NewSeasonSheet extends StatefulWidget {
   const _NewSeasonSheet({
     required this.dependencies,
-    required this.hasActiveSeason,
+    this.editing,
   });
 
   final AppDependencies dependencies;
-  final bool hasActiveSeason;
+  final Season? editing;
 
   @override
   State<_NewSeasonSheet> createState() => _NewSeasonSheetState();
@@ -42,25 +43,45 @@ class _NewSeasonSheet extends StatefulWidget {
 class _NewSeasonSheetState extends State<_NewSeasonSheet> {
   final _title = TextEditingController();
   final _description = TextEditingController();
-  late DateTime _startDate;
+  DateTime _startDate = DateTime.now();
   int _durationWeeks = 8;
   bool _saving = false;
   String? _error;
+  bool _ready = false;
+  bool _hasActiveSeason = false;
+
+  bool get _isEditing => widget.editing != null;
 
   @override
   void initState() {
     super.initState();
-    _startDate = DateTime.now();
-    if (widget.hasActiveSeason) {
-      _loadDefaultStart();
-    }
+    _load();
   }
 
-  Future<void> _loadDefaultStart() async {
-    final active = await widget.dependencies.seasons.activeSeason();
-    if (active == null || !mounted) return;
+  Future<void> _load() async {
+    final editing = widget.editing;
+    if (editing != null) {
+      _title.text = editing.title;
+      _description.text = editing.description ?? '';
+      setState(() {
+        _startDate = editing.startDate;
+        _durationWeeks = editing.durationWeeks;
+        _ready = true;
+      });
+      return;
+    }
+
+    final timeline =
+        SeasonTimeline(await widget.dependencies.seasons.all());
+    final slot = timeline.nextSlot(DateTime.now());
+    if (!mounted) return;
     setState(() {
-      _startDate = SeasonMath.endDate(active.startDate, active.durationWeeks);
+      _hasActiveSeason = timeline.active != null;
+      if (slot != null) {
+        _startDate = slot.startDate;
+        _durationWeeks = slot.durationWeeks;
+      }
+      _ready = true;
     });
   }
 
@@ -104,15 +125,17 @@ class _NewSeasonSheetState extends State<_NewSeasonSheet> {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  widget.hasActiveSeason
-                      ? 'What next?'
-                      : 'What would you like to explore?',
+                  _isEditing
+                      ? 'Edit season'
+                      : (_hasActiveSeason
+                          ? 'What next?'
+                          : 'What would you like to explore?'),
                   style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                if (widget.hasActiveSeason) ...[
+                if (!_isEditing && _hasActiveSeason) ...[
                   const SizedBox(height: 6),
                   const Text(
                     "This won't end your current season. It simply waits "
@@ -176,9 +199,11 @@ class _NewSeasonSheetState extends State<_NewSeasonSheet> {
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton(
-                    onPressed: _saving ? null : _save,
+                    onPressed: (!_ready || _saving) ? null : _save,
                     child: Text(
-                      _saving ? 'Saving…' : 'Save season',
+                      _isEditing
+                          ? 'Save changes'
+                          : (_saving ? 'Saving…' : 'Save season'),
                     ),
                   ),
                 ),
@@ -252,33 +277,45 @@ class _NewSeasonSheetState extends State<_NewSeasonSheet> {
       _error = null;
     });
 
-    final now = DateTime.now();
-    // If a season is active, this row is upcoming and starts after it. If
-    // nothing is active and the start date is today or earlier, it can go
-    // live immediately.
-    final status = widget.hasActiveSeason || _startDate.isAfter(now)
-        ? SeasonStatus.upcoming
-        : SeasonStatus.active;
+    final description =
+        _description.text.trim().isEmpty ? null : _description.text.trim();
 
     try {
-      await widget.dependencies.seasons.createSeason(
-        title: title,
-        description: _description.text.trim().isEmpty
-            ? null
-            : _description.text.trim(),
-        startDate: _startDate,
-        durationWeeks: _durationWeeks,
-        status: status,
-      );
-      if (status == SeasonStatus.active) {
-        await widget.dependencies.rescheduleReminder();
+      if (_isEditing) {
+        await widget.dependencies.seasons.updateSeason(
+          seasonId: widget.editing!.id,
+          title: title,
+          description: description,
+          startDate: _startDate,
+          durationWeeks: _durationWeeks,
+        );
+      } else {
+        final now = DateTime.now();
+        final status = _startDate.isAfter(now)
+            ? SeasonStatus.upcoming
+            : SeasonStatus.active;
+        await widget.dependencies.seasons.createSeason(
+          title: title,
+          description: description,
+          startDate: _startDate,
+          durationWeeks: _durationWeeks,
+          status: status,
+        );
       }
+      await widget.dependencies.rescheduleReminder();
       if (mounted) Navigator.of(context).pop();
     } on ActiveSeasonConflict {
       if (mounted) {
         setState(() {
           _saving = false;
           _error = 'A season is already active.';
+        });
+      }
+    } on UpcomingSeasonLimit {
+      if (mounted) {
+        setState(() {
+          _saving = false;
+          _error = 'You can plan at most $maxUpcomingSeasons seasons ahead.';
         });
       }
     }
