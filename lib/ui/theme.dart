@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:seasonal/brand/palette.dart';
 
-/// A calm, warm, paper-like palette. No alarm colors, no red failure states.
-const _seed = Color(0xFFB4633A);
-
+/// The Seasonal theme. Warm, paper-like, calm. No red failure states and no
+/// green "success" colour — a season is not a task (see brand/BRAND.md).
 ThemeData buildSeasonalTheme() {
   final scheme = ColorScheme.fromSeed(
-    seedColor: _seed,
+    seedColor: SeasonalColors.ember,
+    primary: SeasonalColors.ember,
+    secondary: SeasonalColors.amber,
+    surface: SeasonalColors.white,
     brightness: Brightness.light,
   );
   return ThemeData(
     colorScheme: scheme,
     useMaterial3: true,
-    scaffoldBackgroundColor: const Color(0xFFFBF7F2),
+    scaffoldBackgroundColor: SeasonalColors.paper,
     cardTheme: CardThemeData(
       elevation: 0,
-      color: Colors.white,
+      color: SeasonalColors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       margin: EdgeInsets.zero,
     ),
@@ -22,8 +25,13 @@ ThemeData buildSeasonalTheme() {
       displaySmall: TextStyle(
         fontWeight: FontWeight.w700,
         letterSpacing: -0.5,
+        color: SeasonalColors.ink,
       ),
-      titleLarge: TextStyle(fontWeight: FontWeight.w600),
+      titleLarge: TextStyle(
+        fontWeight: FontWeight.w600,
+        color: SeasonalColors.ink,
+      ),
+      bodyMedium: TextStyle(color: SeasonalColors.clay, height: 1.5),
     ),
   );
 }

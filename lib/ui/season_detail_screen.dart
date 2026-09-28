@@ -178,17 +178,14 @@ class _LifecycleActions extends StatelessWidget {
     );
     if (confirmed != true) return;
     await dependencies.seasons.completeSeason(season.id);
-    await dependencies.notifications.cancelReminder();
+    await dependencies.rescheduleReminder();
     if (context.mounted) Navigator.of(context).pop();
   }
 
   Future<void> _startSeason(BuildContext context) async {
     try {
       await dependencies.seasons.startUpcoming(season.id);
-      await dependencies.notifications.scheduleEndOfSeasonReminder(
-        startDate: season.startDate,
-        durationWeeks: season.durationWeeks,
-      );
+      await dependencies.rescheduleReminder();
     } on ActiveSeasonConflict {
       // The button is disabled in this case; ignore races.
     }

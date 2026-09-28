@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:seasonal/brand/palette.dart';
+import 'package:seasonal/brand/seasonal_mark.dart';
 import 'package:seasonal/data/app_database.dart';
 import 'package:seasonal/domain/season_math.dart';
 import 'package:seasonal/main.dart';
 import 'package:seasonal/services/season_notifications.dart';
 import 'package:seasonal/ui/new_season_sheet.dart';
 import 'package:seasonal/ui/season_detail_screen.dart';
+import 'package:seasonal/ui/settings_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key, required this.dependencies});
@@ -22,7 +25,14 @@ class HomeScreen extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(24, 32, 24, 40),
               children: [
-                const _Wordmark(),
+                _Header(
+                  onSettings: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          SettingsScreen(dependencies: dependencies),
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 32),
                 _ActiveSeasonSection(dependencies: dependencies),
                 const SizedBox(height: 28),
@@ -53,19 +63,34 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class _Wordmark extends StatelessWidget {
-  const _Wordmark();
+class _Header extends StatelessWidget {
+  const _Header({required this.onSettings});
+
+  final VoidCallback onSettings;
 
   @override
   Widget build(BuildContext context) {
-    return const Text(
-      'SEASONAL',
-      style: TextStyle(
-        fontSize: 13,
-        letterSpacing: 6,
-        fontWeight: FontWeight.w700,
-        color: Color(0xFF8A7A6B),
-      ),
+    return Row(
+      children: [
+        const SeasonalMark(size: 40),
+        const SizedBox(width: 14),
+        const Text(
+          'SEASONAL',
+          style: TextStyle(
+            fontSize: 13,
+            letterSpacing: 6,
+            fontWeight: FontWeight.w700,
+            color: SeasonalColors.stone,
+          ),
+        ),
+        const Spacer(),
+        IconButton(
+          onPressed: onSettings,
+          icon: const Icon(Icons.tune),
+          color: SeasonalColors.stone,
+          tooltip: 'Settings',
+        ),
+      ],
     );
   }
 }

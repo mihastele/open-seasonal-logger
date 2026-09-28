@@ -36,31 +36,71 @@ class Seasons extends Table {
       dateTime().withDefault(currentDateAndTime)();
 }
 
-@DriftDatabase(tables: [Seasons])
+/// A single-row table holding the user's one reminder preference.
+///
+/// This is one reminder tied to the end of a season — not a recurring habit
+/// schedule. A season has a natural stopping point, and so does its reminder.
+class ReminderSettings extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  BoolColumn get enabled => boolean().withDefault(const Constant(true))();
+
+  /// How many days before a season ends the reminder fires.
+  IntColumn get daysBeforeEnd => integer().withDefault(const Constant(5))();
+
+  /// Local time of day to fire, as minutes since midnight (default 09:00).
+  IntColumn get timeOfDayMinutes =>
+      integer().withDefault(const Constant(9 * 60))();
+}
+
+
+@DriftDatabase(tables: [Seasons, ReminderSettings])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (m) async {
           await m.createAll();
-          // At most one row may be active. This is a data-layer invariant,
-          // not a UI-only convention: a partial unique index over a constant
-          // expression rejects any second `active` row.
-          await customStatement(
-            "CREATE UNIQUE INDEX seasons_single_active "
-            "ON seasons((1)) WHERE status = 'active'",
-          );
-          await customStatement(
-            "CREATE INDEX seasons_status ON seasons(status)",
-          );
+          await _createInvariantIndexes();
+          await _seedReminderSettings();
+        },
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            await m.createTable(reminderSettings);
+            await _seedReminderSettings();
+          }
+          // Recreate the invariant indexes; safe if they already exist.
+          await _createInvariantIndexes();
         },
       );
+
+  Future<void> _createInvariantIndexes() async {
+    // At most one row may be active. This is a data-layer invariant, not a
+    // UI-only convention: a partial unique index over a constant expression
+    // rejects any second `active` row.
+    await customStatement(
+      "CREATE UNIQUE INDEX IF NOT EXISTS seasons_single_active "
+      "ON seasons((1)) WHERE status = 'active'",
+    );
+    await customStatement(
+      "CREATE INDEX IF NOT EXISTS seasons_status ON seasons(status)",
+    );
+  }
+
+  Future<void> _seedReminderSettings() async {
+    final count = await reminderSettings.count().getSingle();
+    if (count == 0) {
+      await into(reminderSettings).insert(
+        ReminderSettingsCompanion.insert(),
+      );
+    }
+  }
 
   static QueryExecutor _openConnection() {
     return driftDatabase(name: 'seasonal');

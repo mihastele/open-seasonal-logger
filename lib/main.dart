@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:seasonal/data/app_database.dart';
+import 'package:seasonal/data/reminder_repository.dart';
 import 'package:seasonal/data/season_repository.dart';
 import 'package:seasonal/services/season_notifications.dart';
 import 'package:seasonal/ui/home_screen.dart';
@@ -15,11 +16,31 @@ class AppDependencies {
   AppDependencies({AppDatabase? database})
       : database = database ?? AppDatabase() {
     seasons = SeasonRepository(this.database);
+    reminders = ReminderRepository(this.database);
   }
 
   final AppDatabase database;
   late final SeasonRepository seasons;
+  late final ReminderRepository reminders;
   final notifications = SeasonNotificationService();
+
+  /// Re-schedules the end-of-season reminder from the saved settings and the
+  /// current active season. Call after anything that changes either.
+  Future<void> rescheduleReminder() async {
+    final active = await seasons.activeSeason();
+    final setting = await reminders.get();
+    if (active == null) {
+      await notifications.cancelReminder();
+      return;
+    }
+    await notifications.scheduleEndOfSeasonReminder(
+      startDate: active.startDate,
+      durationWeeks: active.durationWeeks,
+      enabled: setting.enabled,
+      daysBeforeEnd: setting.daysBeforeEnd,
+      timeOfDayMinutes: setting.timeOfDayMinutes,
+    );
+  }
 
   bool _disposed = false;
 

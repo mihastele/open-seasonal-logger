@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 200" width="720" height="200" role="img" aria-label="Seasonal">
+  <defs>
+    <linearGradient id="leaf" x1="80" y1="184" x2="176" y2="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#A9532F"/>
+      <stop offset="0.5" stop-color="#C97B44"/>
+      <stop offset="1" stop-color="#E0A659"/>
+    </linearGradient>
+    <linearGradient id="ferrule" x1="98" y1="180" x2="158" y2="206" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7C6353"/>
+      <stop offset="0.5" stop-color="#5B4A3E"/>
+      <stop offset="1" stop-color="#3E332B"/>
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(24 24)">
+    <path d="M128 28
+             C 178 54 202 112 184 162
+             C 174 192 150 208 128 212
+             C 106 208 82 192 72 162
+             C 54 112 78 54 128 28 Z"
+          transform="scale(0.6)" fill="url(#leaf)"/>
+    <g transform="scale(0.6)">
+      <path d="M128 52 C 133 100 133 158 128 198"
+            fill="none" stroke="#FBF7F2" stroke-width="8" stroke-linecap="round" opacity="0.9"/>
+      <path d="M128 92 C 110 104 98 118 92 136" fill="none" stroke="#FBF7F2" stroke-width="6" stroke-linecap="round" opacity="0.75"/>
+      <path d="M128 92 C 146 104 158 118 164 136" fill="none" stroke="#FBF7F2" stroke-width="6" stroke-linecap="round" opacity="0.75"/>
+      <rect x="90" y="196" width="76" height="14" rx="5" fill="url(#ferrule)"/>
+      <path d="M96 210 L160 210 L150 234 L106 234 Z" fill="#B4633A"/>
+      <path d="M106 234 L150 234 L128 252 Z" fill="#3E332B"/>
+    </g>
+  </g>
+
+  <text x="196" y="118"
+        font-family="Inter, Roboto, 'Segoe UI', Helvetica, Arial, sans-serif"
+        font-size="44" font-weight="700" letter-spacing="14"
+        fill="#3E332B">SEASONAL</text>
+</svg>

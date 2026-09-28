@@ -63,22 +63,28 @@ class SeasonNotificationService {
 
   /// (Re)schedules the reminder for a season. Replaces any previous reminder,
   /// so a season never accumulates more than one notification.
+  ///
+  /// [daysBeforeEnd] and [timeOfDayMinutes] come from the user's reminder
+  /// settings. The reminder is skipped if it is disabled or would already be
+  /// in the past.
   Future<void> scheduleEndOfSeasonReminder({
     required DateTime startDate,
     required int durationWeeks,
+    bool enabled = true,
+    int daysBeforeEnd = remindDaysBeforeEnd,
+    int timeOfDayMinutes = 9 * 60,
     DateTime? now,
   }) async {
     if (kIsWeb) return;
     await init();
     await cancelReminder();
+    if (!enabled) return;
 
     final end = SeasonMath.endDate(startDate, durationWeeks);
-    final fireOn = DateTime(
-      end.year,
-      end.month,
-      end.day,
-      9,
-    ).subtract(const Duration(days: remindDaysBeforeEnd));
+    final hour = timeOfDayMinutes ~/ 60;
+    final minute = timeOfDayMinutes % 60;
+    final fireOn = DateTime(end.year, end.month, end.day, hour, minute)
+        .subtract(Duration(days: daysBeforeEnd));
     final reference = now ?? DateTime.now();
     if (!fireOn.isAfter(reference)) return;
 

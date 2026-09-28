@@ -271,10 +271,7 @@ class _NewSeasonSheetState extends State<_NewSeasonSheet> {
         status: status,
       );
       if (status == SeasonStatus.active) {
-        await widget.dependencies.notifications.scheduleEndOfSeasonReminder(
-          startDate: _startDate,
-          durationWeeks: _durationWeeks,
-        );
+        await widget.dependencies.rescheduleReminder();
       }
       if (mounted) Navigator.of(context).pop();
     } on ActiveSeasonConflict {

@@ -8,7 +8,9 @@ streaks, no scores, no dashboards. A season is successful if you genuinely
 explored something, not only if you mastered it.
 
 See [`MISSION.md`](MISSION.md) for the reasoning and [`AGENTS.md`](AGENTS.md)
-for the constraints every change must obey.
+for the constraints every change must obey. [`brand/BRAND.md`](brand/BRAND.md)
+holds the palette, logo, and voice guidelines. The marketing/story site lives
+in [`site/`](site/README.md).
 
 ## What v0.1 does
 
@@ -16,7 +18,8 @@ for the constraints every change must obey.
 - A home screen showing the current season, what's up next, and past seasons.
 - Planning the next season creates a separate **upcoming** season; it never
   ends or overwrites the current one.
-- A gentle local reminder five days before a season ends.
+- A single, user-timed reminder five (or 1/3/7) days before a season ends, at
+  a time you choose, switchable off entirely. Not a recurring habit schedule.
 - An end-of-season reflection of exactly three optional questions:
   *What did I make? What did I learn? Do I want to return to this someday?*
 
@@ -53,10 +56,17 @@ fields in the schema, and the exactly-three reflection prompts.
 ## Project layout
 
 ```
+brand/
+  BRAND.md        palette, logo, and voice guidelines
+  logo/           mark.svg, lockup.svg
+  icons/          rendered app icons
+  render-icons.sh regenerate icons from icon.svg (needs rsvg-convert)
+site/             static story/brand website (no build step)
 lib/
-  data/     Drift schema (AppDatabase) and SeasonRepository
+  brand/    palette and the vector SeasonalMark widget
+  data/     Drift schema, SeasonRepository, ReminderRepository
   domain/   Pure season date math, free of Flutter and Drift
   services/ Local notifications
-  ui/       Home screen, season screen, new-season sheet, theme
-test/       Principle tests and widget tests
+  ui/       Home screen, season screen, new-season sheet, settings, theme
+test/       Principle tests, migration test, and widget tests
 ```
